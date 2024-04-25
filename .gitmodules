@@ -1,0 +1,3 @@
+[submodule "GIRTE"]
+	path = GIRTE
+	url = https://github.com/Alexsoil/GIRTE.git
