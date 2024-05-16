@@ -1,4 +1,7 @@
 .venv
 picklejar
 .graph
+.nx
+.json
 __pycache__
+experiments/temp
