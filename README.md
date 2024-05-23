@@ -9,6 +9,8 @@ python3 -O src/main.py collection theta iter
 - iter: the number of iterations to run (effectively how many documents will be processed). 0 for all the documents in the collection.
 
 ## Current Goal
+- NEW: Re-make Document/Collection classes and create new one to run GSB on BERT tokens
+
 - Load data to the system DONE
 - Use BERT to transform into embeddings DONE
 - Create Graph for each document (embeddings = Vertices, ~~similarity = Edges~~) DONE
