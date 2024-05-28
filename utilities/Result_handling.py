@@ -7,10 +7,13 @@ def res_to_excel(result_model, namefile='example.xlsx', dest_path="collections/t
     df = result_model.results_to_df()
     write(xl_namefile=namefile, dest_path=dest_path, sheetname=sheetname, data=df)
 
-def expir_start(path,path_to_write,col_path):
-
-    from Preprocess.Collection import Collection
-    testcol = Collection(path, name="test")
+def expir_start(path,path_to_write,col_path, token=False):
+    if token is False:
+        from Preprocess.Collection import Collection
+        testcol = Collection(path, name="test")
+    elif token is True:
+        from Preprocess.Tok_Collection import TokCollection
+        testcol = TokCollection(path, name='test')
     testcol.create_collection()
     testcol.save_inverted_index(path_to_write)
     r, q = testcol.load_collection(col_path)
