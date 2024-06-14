@@ -6,6 +6,8 @@ from transformers import BertTokenizer
 from utilities.document_utls import calc_average_edge_w, prune_matrix, adj_to_graph, nodes_to_terms
 from utilities.apriori import apriori
 from tqdm import tqdm
+from time import time
+from nltk.corpus import stopwords
 
 class GIRTEModel(GSBModel):
     def __init__(self, collection: Tok_Collection, k_core_bool=False, h_val=1, p_val=0):
@@ -48,14 +50,21 @@ class GIRTEModel(GSBModel):
         for n in union.nodes: union.remove_edge(n, n)
         return union
     
-    def fit(self, term_queries=None, min_freq=1):
+    def fit(self, term_queries=None, min_freq=1, use_stopwords=True):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         if term_queries is None:
             term_queries = self._queries
         token_queries = []
         for term_query in tqdm(term_queries):
+            trimmed_query = []
+            if use_stopwords == True:
+                for word in term_query:
+                    if word.lower() not in stopwords.words('english'):
+                        trimmed_query.append(word)
+            else:
+                trimmed_query = term_query
             encoding = tokenizer.__call__(
-                term_query,
+                trimmed_query,
                 padding=True,
                 truncation=True,
                 add_special_tokens=True,
@@ -66,9 +75,15 @@ class GIRTEModel(GSBModel):
         inverted_index = self.collection.inverted_index
         print(f'Processing {len(token_queries)} Queries')
         for i, query in enumerate(token_queries):
-            print(f'Q{i}: (Len = {len(query)}) {' '.join(query)}')
+            text = ' '.join(query)
+            print(f'Q{i}: (Len = {len(query)}) {text}')
+            apriori_start = time()
             freq_termsets = apriori(query, inverted_index, min_freq)
+            qvectors_start = time()
             self._queryVectors.append(self.calculate_ts_idf(freq_termsets))
+            dvectors_start = time()
             self._docVectors.append(self.calculate_tsf(freq_termsets))
+            time_end = time()
             self._weights.append(self._model_func(freq_termsets))
+            print(f'Q{i} Apriori: {(qvectors_start - apriori_start):.2f}\tQvectors: {(dvectors_start - qvectors_start):.2f}\tDvectors: {(time_end - dvectors_start):.2f}\tTotal: {(time_end-apriori_start):.2f}')
         return self
