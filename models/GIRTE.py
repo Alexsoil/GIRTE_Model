@@ -5,6 +5,7 @@ from Preprocess import Tok_Document, Tok_Collection
 from transformers import BertTokenizer
 from utilities.document_utls import calc_average_edge_w, prune_matrix, adj_to_graph, nodes_to_terms
 from utilities.apriori import apriori
+from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 from time import time
 from nltk.corpus import stopwords
@@ -25,7 +26,8 @@ class GIRTEModel(GSBModel):
     def union_graph(self):
         union = Graph()
         for doc in self.collection.docs:
-            tokens = list(doc.token_frequency.keys())
+            tokens = doc.tokens
+            tensors = doc.tensors
             adj_matrix = self.doc_to_matrix(doc)
             kcore = []
             if self.k_core_bool:

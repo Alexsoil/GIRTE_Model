@@ -1,7 +1,8 @@
 from Preprocess.Document import Document
 from re import findall
 from utilities.document_utls import calculate_tf
-from transformers import BertTokenizer
+from transformers import BertTokenizer, BertModel
+import torch
 
 class TokDocument(Document):
     """
@@ -28,7 +29,7 @@ class TokDocument(Document):
             self.doc_id = 696969
         self.terms = self.read_document()
         self.text = ''.join(self.terms)
-        self.tokens = self.doc_tokenize()
+        self.tokens, self.tensors= self.doc_tokenize()
         self.token_frequency = calculate_tf(self.tokens)
         
     
@@ -37,13 +38,20 @@ class TokDocument(Document):
     
     def doc_tokenize(self):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        model = BertModel.from_pretrained('bert-base-uncased')
         encoding = tokenizer.__call__(
             self.terms,
             padding=True,
             truncation=True,
-            add_special_tokens=True,
-            is_split_into_words=True
+            add_special_tokens=False,
+            is_split_into_words=True,
+            return_tensors='pt'
         )
-        tokens = tokenizer.convert_ids_to_tokens(encoding['input_ids'], skip_special_tokens=True)
-        return tokens
-        
+        input_ids = encoding['input_ids']
+        attention_mask = encoding['attention_mask']
+        tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
+        with torch.no_grad():
+            outputs = model(input_ids, attention_mask=attention_mask)
+            word_embeddings = outputs.last_hidden_state
+        tensors = word_embeddings[0].tolist()
+        return tokens, tensors
