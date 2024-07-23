@@ -31,6 +31,8 @@ class TokDocument(Document):
         self.text = ''.join(self.terms)
         self.tokens, self.tensors= self.doc_tokenize()
         self.token_frequency = calculate_tf(self.tokens)
+        print(self.tensors.shape)
+        # self.aggregate_tensors = self._aggregate_tensors()
         
     
     def __str__(self):
@@ -53,5 +55,14 @@ class TokDocument(Document):
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             word_embeddings = outputs.last_hidden_state
-        tensors = word_embeddings[0].tolist()
+        tensors = word_embeddings[0]
         return tokens, tensors
+    
+    # def _aggregate_tensors(self):
+    #     agg_tensors = {}
+    #     for tok, tens in zip(self.tokens, self.tensors):
+    #         if tok not in agg_tensors:
+    #             agg_tensors[tok] = tens
+    #         elif tok in agg_tensors:
+    #             agg_tensors[tok] = torch.mean(agg_tensors[tok], tens)
+    #     return agg_tensors

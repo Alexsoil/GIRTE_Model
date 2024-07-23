@@ -43,14 +43,13 @@ def testing(minimum_frequency, trimmed_docs, use_stopwords=True):
         timer = fit_end - fit_start
         print(f'Mean Precision: {prec:.2f}')
         print(f'Total time: {timer:.2f}')
+        print(N._nwk)
         return prec, timer
 
     except Exception as err:
         print(f'Door Stuck. {err}')
 
 output = []
-for i in range(8, 20, 2):
-    precision, time_to_complete = testing(i, False, True)
-    output.append(f'Minimum Frequency: {i} Precision: {precision:.4f} Time: {time_to_complete:.2f} seconds.')
-print('-----------------------------------')
+precision, time_to_complete = testing(16, False, True)
+output.append(f'Minimum Frequency: {16} Precision: {precision:.4f} Time: {time_to_complete:.2f} seconds.')
 print(*output, sep='\n')

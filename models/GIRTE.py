@@ -27,7 +27,7 @@ class GIRTEModel(GSBModel):
         union = Graph()
         for doc in self.collection.docs:
             tokens = doc.tokens
-            tensors = doc.tensors
+            # tensors = doc.tensors
             adj_matrix = self.doc_to_matrix(doc)
             kcore = []
             if self.k_core_bool:
