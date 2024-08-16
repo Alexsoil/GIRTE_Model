@@ -3,6 +3,8 @@ from re import findall
 from utilities.document_utls import calculate_tf
 from transformers import BertTokenizer, BertModel
 import torch
+import os
+from pickle import dump
 
 class TokDocument(Document):
     """
@@ -28,16 +30,21 @@ class TokDocument(Document):
         except IndexError:
             self.doc_id = 696969
         self.terms = self.read_document()
-        self.text = ''.join(self.terms)
-        self.tokens, self.tensors = self.doc_tokenize()
-        self.token_frequency = calculate_tf(self.tokens)
-        self.aggregate_tensors = self._aggregate_tensors()
+        self.text = ' '.join(self.terms)
+        # self.tokens = [] <- If needed can be gotten from doc_tokenize func
+        self.token_frequency = {}
+        # save aggregate tensors on disk
+        self.tensor_path = 'C:/picklejar/collections/CF/tensors'
+        os.makedirs(self.tensor_path, exist_ok=True)
+        with open(os.path.join(self.tensor_path, str(self.doc_id)), 'wb') as picklefile:
+            dump(self.doc_tokenize(), picklefile)
         
     
     def __str__(self):
         return f'ID: {self.doc_id}\nTerms: {self.terms}\nTokens: {self.tokens}'
     
     def doc_tokenize(self):
+        # Initialize and run BERT and generate tokens and embeddings
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertModel.from_pretrained('bert-base-uncased')
         encoding = tokenizer.__call__(
@@ -50,19 +57,21 @@ class TokDocument(Document):
         )
         input_ids = encoding['input_ids']
         attention_mask = encoding['attention_mask']
+        # Tokens
         tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             word_embeddings = outputs.last_hidden_state
+        # Embeddings
         tensors = word_embeddings[0]
         tensor_list = []
         for i in range(len(tensors)):
             tensor_list.append(tensors[i])
-        return tokens, tensor_list
-    
-    def _aggregate_tensors(self):
+        # Token frequency calculated here to save on file size
+        self.token_frequency = calculate_tf(tokens)
+        # Aggregate the tensors of every unique token and save as dictionary {token: tensor}
         aggregate_tensors = {}
-        for token, tensor in zip(self.tokens, self.tensors):
+        for token, tensor in zip(tokens, tensor_list):
             if token not in aggregate_tensors:
                 aggregate_tensors[token] = tensor
             elif token in aggregate_tensors:
