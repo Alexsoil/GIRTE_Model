@@ -47,13 +47,13 @@ class TokDocument(Document):
         self.tensor_path = f'C:/picklejar/tensors/{self._bert}/{swords}'
         os.makedirs(self.tensor_path, exist_ok=True)
         with open(os.path.join(self.tensor_path, str(self.doc_id)), 'wb') as picklefile:
-            pickle.dump(self.doc_tokenize(), picklefile)
+            pickle.dump(self.doc_encode(), picklefile)
         
     
     def __str__(self):
         return f'ID: {self.doc_id}\nTerms: {self.terms}'
     
-    def doc_tokenize(self):
+    def doc_encode(self):
         # Initialize and run BERT to generate tokens and embeddings
         tokenizer = BertTokenizer.from_pretrained(f'bert-{self._bert}-uncased')
         model = BertModel.from_pretrained(f'bert-{self._bert}-uncased')
