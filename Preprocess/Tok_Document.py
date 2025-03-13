@@ -21,7 +21,7 @@ class TokDocument(Document):
                 Whether to use *bert-base-uncased* or *bert-large-uncased*.
             stopwords (`bool`, defaults to `False`):
                 Whether or not to filter stopwords out of the document prior
-                to processing. Stopwords defined by nltk.corpus.stopwords('english).
+                to processing. Stopwords defined by nltk.corpus.stopwords('english').
     """
 
     def __init__(self, path='', bert='base', stopwords=False):
